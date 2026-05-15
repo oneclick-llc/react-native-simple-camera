@@ -11,6 +11,9 @@ import android.util.Log
 import android.view.*
 import android.view.View.OnTouchListener
 import android.widget.FrameLayout
+import androidx.camera.camera2.interop.Camera2CameraControl
+import androidx.camera.camera2.interop.CaptureRequestOptions
+import androidx.camera.camera2.interop.ExperimentalCamera2Interop
 import androidx.camera.core.*
 import androidx.camera.core.impl.*
 import androidx.camera.extensions.*
@@ -209,9 +212,8 @@ class CameraView(context: Context) : FrameLayout(context), LifecycleOwner {
     videoCapture?.targetRotation = outputRotation
   }
 
-  override fun getLifecycle(): Lifecycle {
-    return lifecycleRegistry
-  }
+  override val lifecycle: Lifecycle
+    get() = lifecycleRegistry
 
   /**
    * Updates the custom Lifecycle to match the host activity's lifecycle, and if it's active we
@@ -307,6 +309,7 @@ class CameraView(context: Context) : FrameLayout(context), LifecycleOwner {
    * Configures the camera capture session. This should only be called when the camera device
    * changes.
    */
+  @OptIn(ExperimentalCamera2Interop::class)
   @SuppressLint("RestrictedApi", "UnsafeOptInUsageError")
   private suspend fun configureSession() {
     try {
@@ -390,6 +393,23 @@ class CameraView(context: Context) : FrameLayout(context), LifecycleOwner {
 
       minZoom = camera!!.cameraInfo.zoomState.value?.minZoomRatio ?: 1f
       maxZoom = camera!!.cameraInfo.zoomState.value?.maxZoomRatio ?: 1f
+
+      Camera2CameraControl.from(camera!!.cameraControl)
+          .setCaptureRequestOptions(
+              CaptureRequestOptions.Builder()
+                  .setCaptureRequestOption(
+                      CaptureRequest.CONTROL_MODE,
+                      CaptureRequest.CONTROL_MODE_AUTO
+                  )
+                  .setCaptureRequestOption(
+                      CaptureRequest.CONTROL_AE_MODE,
+                      CaptureRequest.CONTROL_AE_MODE_ON
+                  )
+                  .setCaptureRequestOption(CaptureRequest.CONTROL_AE_LOCK, false)
+                  .setCaptureRequestOption(CaptureRequest.CONTROL_AWB_LOCK, false)
+                  .build()
+          )
+          .await()
 
       val duration = System.currentTimeMillis() - startTime
       Log.i(TAG_PERF, "Session configured in $duration ms! Camera: ${camera!!}")
