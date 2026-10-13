@@ -1,7 +1,6 @@
 package com.simplecamera
 
 import com.facebook.react.bridge.ReactApplicationContext
-import com.facebook.react.common.MapBuilder
 import com.facebook.react.uimanager.ThemedReactContext
 import com.facebook.react.uimanager.ViewGroupManager
 import com.facebook.react.uimanager.annotations.ReactProp
@@ -24,12 +23,12 @@ class CameraViewManager(reactContext: ReactApplicationContext) : ViewGroupManage
   }
 
   override fun getExportedCustomDirectEventTypeConstants(): MutableMap<String, Any>? {
-    return MapBuilder.builder<String, Any>()
-      .put("cameraViewReady", MapBuilder.of("registrationName", "onViewReady"))
-      .put("cameraInitialized", MapBuilder.of("registrationName", "onInitialized"))
-      .put("cameraError", MapBuilder.of("registrationName", "onError"))
-      .put("cameraReadCode", MapBuilder.of("registrationName", "onReadCode"))
-      .build()
+    return mutableMapOf(
+      "cameraViewReady" to mapOf("registrationName" to "onViewReady"),
+      "cameraInitialized" to mapOf("registrationName" to "onInitialized"),
+      "cameraError" to mapOf("registrationName" to "onError"),
+      "cameraReadCode" to mapOf("registrationName" to "onReadCode"),
+    )
   }
 
   override fun getName(): String {
